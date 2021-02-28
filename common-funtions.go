@@ -1,6 +1,7 @@
 package smarthome_common
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
 	"net"
@@ -26,6 +27,15 @@ func RespondWithJSONError(w http.ResponseWriter, code int, errorMessage string) 
 	message := map[string]string{"error": errorMessage}
 
 	RespondWithJSON(w, code, message)
+}
+
+func MakeHubConnectionRequest(address string, body []byte, resp chan<- PingMessage) {
+	response, err := http.Post(address, "application/json", bytes.NewBuffer(body))
+	if err == nil {
+		resp <- PingMessage{response, address, body}
+	} else {
+		resp <- PingMessage{nil, address, body}
+	}
 }
 
 func GetIPAddress() string {
